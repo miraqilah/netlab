@@ -1,0 +1,4 @@
+PROBLEM: h5 and h1 both use 10.80.0.5
+PROBLEM: h5 and h1 both use fd00:1780::5
+PROBLEM: link [h1, s9] uses s9, which doesn't exist
+Fix the description and try again.
