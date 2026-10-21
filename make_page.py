@@ -63,8 +63,11 @@ def links_section(spec):
     For example, for links [h1, s1] and [s1, s2] return:
         <ul><li>h1 — s1</li><li>s1 — s2</li></ul>
     Use esc() on every name, as hosts_section() does.
+
+    "return <p>TODO: list the links.</p>"
     """
-    return "<p>TODO: list the links.</p>"
+    items = "".join(f"<li>{esc(a)} — {esc(b)}</li>" for a, b in spec["links"])
+    return f"<ul>{items}</ul>"
 
 
 def mermaid_diagram(spec):
@@ -76,8 +79,20 @@ def mermaid_diagram(spec):
           s1 --- s2
     Start with "graph LR", then add one line per link. For extra credit, show each host's
     IPv4 address in its box, e.g.  h1["h1<br>10.NN.0.1"] --- s1
+    
+    "return graph LR\n  todo[Diagram not generated yet]"
     """
-    return "graph LR\n  todo[Diagram not generated yet]"
+    ips = {h["name"]: h["ip"].split("/")[0] for h in spec["hosts"]}
+
+    def node(name):
+        if name in ips:  # a host: show its IPv4 address in the box
+            return f'{name}["{name}<br>{ips[name]}"]'
+        return name  # a switch
+
+    lines = ["graph LR"]
+    for a, b in spec["links"]:
+        lines.append(f"    {node(a)} --- {node(b)}")
+    return "\n".join(lines)
 
 
 def evidence_section(ev_id, path, title):

@@ -3,27 +3,52 @@
 # leave a blank line between paragraphs. Refer to YOUR network and YOUR evidence.
 # Never put your name or full student ID here: the page is public.
 
-repository: https://github.com/YOUR-USERNAME/YOUR-REPOSITORY
+repository: https://github.com/miraqilah/netlab
 
 answers:
   planes:
     question: "Where are the data, control and management planes in your network?"
-    answer: ""
+    answer: |
+      data planes = the switches
+      control planes = none; because in build() controller=None
+      management planes = topology.yaml that manage the network
   learning:
     question: "How did your switches learn which port leads to each host? Use your MAC table evidence."
-    answer: ""
+    answer: |
+      based on macs.txt
+      The switch learns a source MAC address on the port a frame arrives
+      port 1 has MAC address ....00:01 which represent h1 connected to this port1
+      port 2 has MAC address ....00:02 which represent h2 connected to this port2
+      while port 3 has MAC address ....00:03 until ...00:06 which represent h3 till h6 connected to this port3
   kind:
     question: "Which of the four kinds of programmability is this assignment (a network described as data, then built and documented by scripts)? Why isn't it any of the other three?"
-    answer: ""
+    answer: |
+     automated configuration management
+     because the configuration is from topology.yaml (files that described the whole network)
+     then build_topo.py = build the network
+     make_page.py = build the web page
+     check() to check is there any duplicate IP address and also the connection between undefined switch/host
+     git diff = shows what exatcly changed
+     Not Programmable data plane: nothing changes how packets are processed. 
+     Not Externalised control plane: there is no controller. Look at controller=None in build().
+     Not Programmatic device interfaces: no interaction through NETCONF, RESTCONF.
   two_am:
     question: "Week 1's 2 a.m. change on 40 switches: what would be different if those switches were described like your network?"
-    answer: ""
+    answer: |
+     can view which part is change by (git diff)
   model:
     question: "What's the difference between your network's data model and its serialisation? Use YAML and JSON as the example."
-    answer: ""
+    answer: |
+     The data model is what the network is such as switches, hosts, links and addresses.
+     Serialisation is how it’s written down. (YAML and JSON are the same thing but two ways of writing)
   check:
     question: "Why is it better to catch bad data in check() than with pingall? What did IPv6 notice about a duplicate address that IPv4 didn't?"
-    answer: ""
+    answer: | 
+     sometimes pingall doesnt guarantee the network is working properly
+     check() makes sure the network is problem free
+     in dad.txt shows fd00:1780::1/64 ... dadfailed. IPv6 duplicate address detection, while IPv4 accepted 10.80.0.1/24 without any warning.
   git:
     question: "What does your Git history give you that copying files into folders named topology-v2-final wouldn't?"
-    answer: ""
+    answer: |
+     Run git log --oneline to shows what changed and why, in order.
+     Run git diff after a small edit and notice it shows exactly which lines changed
