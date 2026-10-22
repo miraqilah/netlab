@@ -50,5 +50,5 @@ answers:
   git:
     question: "What does your Git history give you that copying files into folders named topology-v2-final wouldn't?"
     answer: |
-     Run git log --oneline to shows what changed and why, in order.
+     So i can see what is changes, when it happened and why. Example, Run git log --oneline to shows what changed and why, in order.
      Run git diff after a small edit and notice it shows exactly which lines changed

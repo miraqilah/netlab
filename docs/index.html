@@ -15,7 +15,7 @@
 </head>
 <body>
 <h1>My network, built from data</h1>
-<p class="meta">Student ID ending 1780 · generated from <code>topology.yaml</code> by <code>make_page.py</code> on 2026-10-21</p>
+<p class="meta">Student ID ending 1780 · generated from <code>topology.yaml</code> by <code>make_page.py</code> on 2026-10-22</p>
 <p id="summary">3 switches, 6 hosts and 8 links, on IPv4 <code>10.80.0.0/16</code> and IPv6 <code>fd00:1780::/32</code>.
 The same file builds this network in Mininet and generates this page.</p>
 <p>Repository: <a id="repository" href="https://github.com/miraqilah/netlab">https://github.com/miraqilah/netlab</a></p>
@@ -119,7 +119,7 @@ Serialisation is how it’s written down. (YAML and JSON are the same thing but 
 <section id="answer-check"><h3>Why is it better to catch bad data in check() than with pingall? What did IPv6 notice about a duplicate address that IPv4 didn&#x27;t?</h3><p>sometimes pingall doesnt guarantee the network is working properly
 check() makes sure the network is problem free
 in dad.txt shows fd00:1780::1/64 ... dadfailed. IPv6 duplicate address detection, while IPv4 accepted 10.80.0.1/24 without any warning.</p></section>
-<section id="answer-git"><h3>What does your Git history give you that copying files into folders named topology-v2-final wouldn&#x27;t?</h3><p>Run git log --oneline to shows what changed and why, in order.
+<section id="answer-git"><h3>What does your Git history give you that copying files into folders named topology-v2-final wouldn&#x27;t?</h3><p>So i can see what is changes, when it happened and why. Example, Run git log --oneline to shows what changed and why, in order.
 Run git diff after a small edit and notice it shows exactly which lines changed</p></section></section>
 
 <script type="application/json" id="topology-data">{
