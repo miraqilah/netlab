@@ -161,7 +161,30 @@ def check_paths(routes, nn):
     Return the list of problem messages, like check() in Week 2.
     """
     problems = []
-    # TODO: your code here
+    hosts = list(GATEWAYS)  # h1, h2, h3
+    for src in hosts:
+        for dst in hosts:
+            if src == dst:
+                continue
+            destination = ipaddress.ip_address(f"10.{nn}.{GATEWAYS[dst]}.10")
+            router = owner(ipaddress.ip_address(f"10.{nn}.{GATEWAYS[src]}.1"), nn)
+            visited = [router]
+            while True:
+                action, next_hop = lookup(router, destination, routes, nn)
+                if action == "connected":  # delivered: this pair is fine
+                    break
+                if action == "none":  # the router has no matching route
+                    problems.append(f"{src} to {dst}: {router} has no route to {destination}")
+                    break
+                router = owner(next_hop, nn)  # "via": move on to the next router
+                if router not in ROUTERS:
+                    problems.append(f"{src} to {dst}: next hop {next_hop} isn't a router")
+                    break
+                if router in visited:  # been here before: the packet is looping
+                    visited.append(router)
+                    problems.append(f"{src} to {dst}: loop {' -> '.join(visited)}")
+                    break
+                visited.append(router)
     return problems
 
 
