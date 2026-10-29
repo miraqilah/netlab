@@ -52,6 +52,23 @@ def links_section(spec):
 
 
 def routing_tables_section(spec):
+    out = []
+    for router in spec["routers"]:
+        entries = [(i.network, "directly connected") for i in plan(spec)[router]]
+        entries += [
+            (ipaddress.ip_network(r["to"]), f"via {r['via']}")
+            for r in (spec.get("routes") or {}).get(router) or []
+        ]
+        entries.sort(key=lambda e: (-e[0].prefixlen, int(e[0].network_address)))  # longest prefix first
+        rows = "".join(
+            f"<tr><td><code>{esc(net)}</code></td><td>{esc(hop)}</td></tr>" for net, hop in entries
+        )
+        out.append(
+            f"<h3>{esc(router)}</h3><table><thead><tr><th>Destination</th><th>Next hop</th></tr></thead>"
+            f"<tbody>{rows}</tbody></table>"
+        )
+    return "\n".join(out)
+
     """TODO (assignment): return HTML showing each router's routing table, as the router sees it.
 
     For each router in spec["routers"], list:
@@ -66,6 +83,7 @@ def routing_tables_section(spec):
     Use esc() on every value.
     """
     return "<p>TODO: show each router's routing table.</p>"
+
 
 
 def mermaid_diagram(spec):

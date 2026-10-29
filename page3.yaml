@@ -2,18 +2,32 @@
 # A few sentences each, in your own words, about YOUR network and YOUR evidence.
 # Leave a blank line between paragraphs. Never put your name or full student ID here.
 
-repository: https://github.com/YOUR-USERNAME/YOUR-REPOSITORY
+repository: https://github.com/miraqilah/netlab
 
 answers:
   design:
     question: "Describe your design: why these routers, LANs and links, and how you chose the addresses."
-    answer: ""
+    answer: |
+      The 4 routers with a triangle (r1, r2, r3) and r4 as a stub router connected to r1. 
+      The triangle gives the redundant path, and the stub gives a natural place for a summary. 
+      LAN numbers 1 to 4 is choosen so that only LANs 1 to 3 aligned to a /22 and LAN 4 is not included.
+      On each link, the first router named is .1 and the second gets .2
   summary:
     question: "Which route summarises several LANs? Which networks does it cover, why is it correct, and what else would it attract if you added a network inside its range?"
-    answer: ""
+    answer: |
+      The /22 on r4 (10.80.0.0/22) covers LANs 1, 2 and 3 but not LAN 4. 
+      It’s correct because all three LANs are reached through r1, and summary.txt shows all three using the same next hop, 10.80.14.1. 
+      If adding a network anywhere in 10.80.0.0 to 10.80.3.255 range, r4 would send its traffic to r1 whether or not it exists there.
   failure:
     question: "When you took a link down, what happened, and why couldn't your routes recover even though another path existed? What would have recovered?"
-    answer: ""
+    answer: |
+      After link r1 r2 down, the trace from h1 to h2 stopped at r1 (10.80.1.1) with !N, also network is unreacheable.
+      It couldn't take other routes because the static routes doesn't adapt, as it only know one path only.
+      To recoverd a backup route via r3, a routing protocol (like OSPF) that notices the failure, or a controller.
   control_plane:
     question: "In your network, what was the control plane? Who worked out the routes, and what does that mean for a network of 40 routers?"
-    answer: ""
+    answer: |
+      The user was the control plane. 
+      Every route was route by hand and wrote it into network.yaml
+      With 40 routers, writing every route by hand is not practical because one mistake could cause a loop or unwanted errors.
+      A routing protocol needed to be checked first.
