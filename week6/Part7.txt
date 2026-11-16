@@ -1,0 +1,35 @@
+PS C:\netlab> docker run -d --name c1 alpine:3.20 sleep 600
+Unable to find image 'alpine:3.20' locally
+3.20: Pulling from library/alpine
+25f1d6b1951a: Pull complete 
+3a030ca3f633: Download complete 
+d4050d56ebf2: Download complete 
+Digest: sha256:d9e853e87e55526f6b2917df91a2115c36dd7c696a35be12163d44e6e2a4b6bc
+Status: Downloaded newer image for alpine:3.20
+bf0f9e6a93eba1d5f5c05355bc2ddcb01c265f0fd156fa779b065ad306538dea
+
+
+PS C:\netlab> docker exec c1 ip addr show eth0
+2: eth0@if11: <BROADCAST,MULTICAST,UP,LOWER_UP,M-DOWN> mtu 1500 qdisc noqueue state UP 
+    link/ether 52:c0:41:59:84:16 brd ff:ff:ff:ff:ff:ff
+    inet 172.17.0.4/16 brd 172.17.255.255 scope global eth0
+       valid_lft forever preferred_lft forever
+
+
+PS C:\netlab> docker exec c1 cat /etc/os-release
+NAME="Alpine Linux"
+ID=alpine
+VERSION_ID=3.20.10
+PRETTY_NAME="Alpine Linux v3.20"
+HOME_URL="https://alpinelinux.org/"
+BUG_REPORT_URL="https://gitlab.alpinelinux.org/alpine/aports/-/issues"
+
+
+PS C:\netlab> docker exec c1 ps
+PID   USER     TIME  COMMAND
+    1 root      0:00 sleep 600
+   19 root      0:00 ps
+
+PS C:\netlab> docker rm -f c1
+c1
+PS C:\netlab> 

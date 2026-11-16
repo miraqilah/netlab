@@ -1,0 +1,18 @@
+mininet> sh lsns -t net -o NS,PID,COMMAND
+        NS PID COMMAND
+4026532379   1 bash
+4026532451  25 bash --norc --noediting -is mininet:h1
+4026532520  27 bash --norc --noediting -is mininet:h2
+mininet> h1 ip -br link
+lo               UNKNOWN        00:00:00:00:00:00 <LOOPBACK,UP,LOWER_UP> 
+h1-eth0@if3      UP             00:00:00:00:00:01 <BROADCAST,MULTICAST,UP,LOWER_UP> 
+mininet> sh ip -br link
+lo               UNKNOWN        00:00:00:00:00:00 <LOOPBACK,UP,LOWER_UP> 
+eth0@if5         UP             3a:9e:3e:dc:35:30 <BROADCAST,MULTICAST,UP,LOWER_UP> 
+s1-eth1@if2      UP             9a:23:9c:cb:02:71 <BROADCAST,MULTICAST,UP,LOWER_UP> 
+s1-eth2@if2      UP             fe:f5:59:d7:63:23 <BROADCAST,MULTICAST,UP,LOWER_UP> 
+s1               UP             9a:23:9c:cb:02:71 <BROADCAST,MULTICAST,UP,LOWER_UP> 
+mininet> dump
+<Host h1: h1-eth0:10.80.0.1 pid=25> 
+<Host h2: h2-eth0:10.80.0.2 pid=27> 
+<LinuxBridge s1: lo:127.0.0.1,s1-eth1:None,s1-eth2:None pid=33>

@@ -1,0 +1,150 @@
+mininet> h2 ip link set h2-eth0 mtu 1400
+
+mininet> h1 ping -c 2 10.80.100.2
+PING 10.80.100.2 (10.80.100.2) 56(84) bytes of data.
+64 bytes from 10.80.100.2: icmp_seq=1 ttl=64 time=1.56 ms
+64 bytes from 10.80.100.2: icmp_seq=2 ttl=64 time=0.097 ms
+
+--- 10.80.100.2 ping statistics ---
+2 packets transmitted, 2 received, 0% packet loss, time 1001ms
+rtt min/avg/max/mdev = 0.097/0.828/1.559/0.731 ms
+
+mininet> h1 ping -c 2 -s 1400 10.80.100.2
+PING 10.80.100.2 (10.80.100.2) 1400(1428) bytes of data.
+
+--- 10.80.100.2 ping statistics ---
+2 packets transmitted, 0 received, 100% packet loss, time 1017ms
+
+
+
+
+mininet> h1 iperf3 -c 10.80.100.2 -t 5
+iperf3: error - unable to connect to server - server may have stopped running or use a different port, firewall issue, etc.: Connection refused
+mininet> h2 iperf3 -s -D
+mininet> h1 iperf3 -c 10.80.100.2 -t 5
+Connecting to host 10.80.100.2, port 5201
+[  5] local 10.80.100.1 port 53474 connected to 10.80.100.2 port 5201
+[ ID] Interval           Transfer     Bitrate         Retr  Cwnd
+[  5]   0.00-1.00   sec  4.62 GBytes  39.6 Gbits/sec    1   1.39 MBytes       
+[  5]   1.00-2.00   sec  5.00 GBytes  42.9 Gbits/sec    0   1.42 MBytes       
+[  5]   2.00-3.00   sec  4.92 GBytes  42.3 Gbits/sec    0   1.44 MBytes       
+[  5]   3.00-4.00   sec  5.04 GBytes  43.3 Gbits/sec    0   1.47 MBytes       
+[  5]   4.00-5.00   sec  4.98 GBytes  42.7 Gbits/sec    0   1.48 MBytes       
+- - - - - - - - - - - - - - - - - - - - - - - - -
+[ ID] Interval           Transfer     Bitrate         Retr
+[  5]   0.00-5.00   sec  24.6 GBytes  42.3 Gbits/sec    1             sender
+[  5]   0.00-5.01   sec  24.6 GBytes  42.3 Gbits/sec                  receiver
+
+iperf Done.
+
+
+mininet> h2 ip link show h2-eth0
+2: h2-eth0@if4: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1400 qdisc noqueue state UP mode DEFAULT group default qlen 1000
+    link/ether 00:00:00:00:00:02 brd ff:ff:ff:ff:ff:ff link-netnsid 0
+
+
+mininet> h1 ping -M do -c 1 -s 1300 10.80.100.2
+PING 10.80.100.2 (10.80.100.2) 1300(1328) bytes of data.
+1308 bytes from 10.80.100.2: icmp_seq=1 ttl=64 time=1.88 ms
+
+--- 10.80.100.2 ping statistics ---
+1 packets transmitted, 1 received, 0% packet loss, time 0ms
+rtt min/avg/max/mdev = 1.878/1.878/1.878/0.000 ms
+
+
+mininet> h1 ping -M do -c 1 -s 1320 10.80.100.2
+PING 10.80.100.2 (10.80.100.2) 1320(1348) bytes of data.
+1328 bytes from 10.80.100.2: icmp_seq=1 ttl=64 time=1.65 ms
+
+--- 10.80.100.2 ping statistics ---
+1 packets transmitted, 1 received, 0% packet loss, time 0ms
+rtt min/avg/max/mdev = 1.653/1.653/1.653/0.000 ms
+
+
+mininet> h1 ping -M do -c 1 -s 1360 10.80.100.2
+PING 10.80.100.2 (10.80.100.2) 1360(1388) bytes of data.
+
+--- 10.80.100.2 ping statistics ---
+1 packets transmitted, 0 received, 100% packet loss, time 0ms
+
+
+
+mininet> h1 ping -M do -c 1 -s 1340 10.80.100.2
+PING 10.80.100.2 (10.80.100.2) 1340(1368) bytes of data.
+
+--- 10.80.100.2 ping statistics ---
+1 packets transmitted, 0 received, 100% packet loss, time 0ms
+
+
+mininet> h1 ping -M do -c 1 -s 1326 10.80.100.2
+PING 10.80.100.2 (10.80.100.2) 1326(1354) bytes of data.
+1334 bytes from 10.80.100.2: icmp_seq=1 ttl=64 time=6.09 ms
+
+--- 10.80.100.2 ping statistics ---
+1 packets transmitted, 1 received, 0% packet loss, time 0ms
+rtt min/avg/max/mdev = 6.092/6.092/6.092/0.000 ms
+
+
+mininet> h1 ping -M do -c 1 -s 1327 10.80.100.2
+PING 10.80.100.2 (10.80.100.2) 1327(1355) bytes of data.
+
+--- 10.80.100.2 ping statistics ---
+1 packets transmitted, 0 received, 100% packet loss, time 0ms
+
+
+mininet> sh cat /sys/class/net/s1-eth2/statistics/tx_dropped
+5
+mininet> h2 cat /sys/class/net/h2-eth0/statistics/rx_dropped
+5
+mininet> h1 ping -c 5 -s 1400 10.80.100.2
+PING 10.80.100.2 (10.80.100.2) 1400(1428) bytes of data.
+
+--- 10.80.100.2 ping statistics ---
+5 packets transmitted, 0 received, 100% packet loss, time 4086ms
+
+mininet> sh cat /sys/class/net/s1-eth2/statistics/tx_dropped
+10
+mininet> h2 cat /sys/class/net/h2-eth0/statistics/rx_dropped
+10
+
+
+
+fix MTU=1500
+mininet> h2 ip link set h2-eth0 mtu 1500
+mininet> h2 ip link show h2-eth0
+2: h2-eth0@if4: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc noqueue state UP mode DEFAULT group default qlen 1000
+    link/ether 00:00:00:00:00:02 brd ff:ff:ff:ff:ff:ff link-netnsid 0
+mininet> h1 ping -c 2 -s 1400 10.80.100.2
+PING 10.80.100.2 (10.80.100.2) 1400(1428) bytes of data.
+1408 bytes from 10.80.100.2: icmp_seq=1 ttl=64 time=5.13 ms
+1408 bytes from 10.80.100.2: icmp_seq=2 ttl=64 time=0.084 ms
+
+--- 10.80.100.2 ping statistics ---
+2 packets transmitted, 2 received, 0% packet loss, time 1002ms
+rtt min/avg/max/mdev = 0.084/2.606/5.129/2.522 ms
+mininet> h1 iperf3 -c 10.80.100.2 -t 5
+Connecting to host 10.80.100.2, port 5201
+[  5] local 10.80.100.1 port 50880 connected to 10.80.100.2 port 5201
+[ ID] Interval           Transfer     Bitrate         Retr  Cwnd
+[  5]   0.00-1.00   sec  3.36 GBytes  28.8 Gbits/sec    0   2.60 MBytes       
+[  5]   1.00-2.00   sec  3.65 GBytes  31.4 Gbits/sec  1616   3.01 MBytes       
+[  5]   2.00-3.00   sec  2.75 GBytes  23.6 Gbits/sec  549   3.01 MBytes       
+[  5]   3.00-4.00   sec  3.23 GBytes  27.7 Gbits/sec  200   3.01 MBytes       
+[  5]   4.00-5.00   sec  2.90 GBytes  24.9 Gbits/sec  1088   3.03 MBytes       
+- - - - - - - - - - - - - - - - - - - - - - - - -
+[ ID] Interval           Transfer     Bitrate         Retr
+[  5]   0.00-5.00   sec  15.9 GBytes  27.3 Gbits/sec  3453             sender
+[  5]   0.00-5.00   sec  15.9 GBytes  27.3 Gbits/sec                  receiver
+
+iperf Done.
+
+
+ vxlan mtu CANNOT LESS THAN eth0 mtu
+
+mininet> h1 ip link set h1-eth0 mtu 1400
+mininet> h1 ip link set vxlan100 mtu 1500
+RTNETLINK answers: Invalid argument
+mininet> h1 ip link set h1-eth0 mtu 1500
+mininet> h1 ip link show h1-eth0
+2: h1-eth0@if3: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc noqueue state UP mode DEFAULT group default qlen 1000
+    link/ether 00:00:00:00:00:01 brd ff:ff:ff:ff:ff:ff link-netnsid 0

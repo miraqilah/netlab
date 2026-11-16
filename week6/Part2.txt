@@ -1,0 +1,28 @@
+root@1cc866a986af:/lab# ip netns exec red ping -c 2 10.80.9.2
+PING 10.80.9.2 (10.80.9.2) 56(84) bytes of data.
+64 bytes from 10.80.9.2: icmp_seq=1 ttl=64 time=3.14 ms
+64 bytes from 10.80.9.2: icmp_seq=2 ttl=64 time=0.094 ms
+
+--- 10.80.9.2 ping statistics ---
+2 packets transmitted, 2 received, 0% packet loss, time 1002ms
+rtt min/avg/max/mdev = 0.094/1.616/3.139/1.522 ms
+
+
+root@1cc866a986af:/lab# bridge fdb show br br0
+5e:d5:5b:a2:af:e7 dev red-br master br0 
+ee:17:72:af:da:a5 dev red-br vlan 1 master br0 permanent
+ee:17:72:af:da:a5 dev red-br master br0 permanent
+33:33:00:00:00:01 dev red-br self permanent
+01:00:5e:00:00:01 dev red-br self permanent
+33:33:ff:af:da:a5 dev red-br self permanent
+ce:d6:34:31:27:61 dev blue-br master br0 
+76:8a:17:ba:fe:3e dev blue-br vlan 1 master br0 permanent
+76:8a:17:ba:fe:3e dev blue-br master br0 permanent
+33:33:00:00:00:01 dev blue-br self permanent
+01:00:5e:00:00:01 dev blue-br self permanent
+33:33:ff:ba:fe:3e dev blue-br self permanent
+33:33:00:00:00:01 dev br0 self permanent
+01:00:5e:00:00:6a dev br0 self permanent
+33:33:00:00:00:6a dev br0 self permanent
+01:00:5e:00:00:01 dev br0 self permanent
+33:33:ff:ba:fe:3e dev br0 self permanent

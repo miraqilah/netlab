@@ -1,0 +1,57 @@
+mininet> h1 ip link show h1-eth0
+2: h1-eth0@if11: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc noqueue state UP mode DEFAULT group default qlen 1000
+    link/ether 00:00:00:00:00:01 brd ff:ff:ff:ff:ff:ff link-netnsid 0
+mininet> h1 ip link show vxlan100
+3: vxlan100: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1450 qdisc noqueue state UNKNOWN mode DEFAULT group default qlen 1000
+    link/ether ce:1c:af:bc:3d:fd brd ff:ff:ff:ff:ff:ff
+
+
+mininet> h1 ping -M do -c 1 -s 1422 10.80.100.2
+PING 10.80.100.2 (10.80.100.2) 1422(1450) bytes of data.
+1430 bytes from 10.80.100.2: icmp_seq=1 ttl=64 time=1.89 ms
+
+--- 10.80.100.2 ping statistics ---
+1 packets transmitted, 1 received, 0% packet loss, time 0ms
+rtt min/avg/max/mdev = 1.890/1.890/1.890/0.000 ms
+mininet> h1 ping -M do -c 1 -s 1423 10.80.100.2
+PING 10.80.100.2 (10.80.100.2) 1423(1451) bytes of data.
+ping: local error: message too long, mtu=1450
+
+--- 10.80.100.2 ping statistics ---
+1 packets transmitted, 0 received, +1 errors, 100% packet loss, time 0ms
+
+
+
+mininet> h2 iperf3 -s -D
+mininet> h1 iperf3 -c 10.NN.0.2 -t 5
+iperf3: error - unable to connect to server - server may have stopped running or use a different port, firewall issue, etc.: Resource temporarily unavailable
+mininet> h1 iperf3 -c 10.80.0.2 -t 5
+Connecting to host 10.80.0.2, port 5201
+[  5] local 10.80.0.1 port 51988 connected to 10.80.0.2 port 5201
+[ ID] Interval           Transfer     Bitrate         Retr  Cwnd
+[  5]   0.00-1.00   sec  5.66 GBytes  48.5 Gbits/sec    2   1.74 MBytes       
+[  5]   1.00-2.00   sec  5.83 GBytes  50.1 Gbits/sec    0   1.75 MBytes       
+[  5]   2.00-3.00   sec  5.64 GBytes  48.4 Gbits/sec    0   1.77 MBytes       
+[  5]   3.00-4.00   sec  5.57 GBytes  47.9 Gbits/sec    2   1.79 MBytes       
+[  5]   4.00-5.02   sec  5.49 GBytes  46.5 Gbits/sec  544   1.31 MBytes       
+- - - - - - - - - - - - - - - - - - - - - - - - -
+[ ID] Interval           Transfer     Bitrate         Retr
+[  5]   0.00-5.02   sec  28.2 GBytes  48.3 Gbits/sec  548             sender
+[  5]   0.00-5.02   sec  28.2 GBytes  48.3 Gbits/sec                  receiver
+
+iperf Done.
+mininet> h1 iperf3 -c 10.80.100.2 -t 5
+Connecting to host 10.80.100.2, port 5201
+[  5] local 10.80.100.1 port 43634 connected to 10.80.100.2 port 5201
+[ ID] Interval           Transfer     Bitrate         Retr  Cwnd
+[  5]   0.00-1.00   sec  4.39 GBytes  37.7 Gbits/sec  186    947 KBytes       
+[  5]   1.00-2.00   sec  4.87 GBytes  41.8 Gbits/sec    0    949 KBytes       
+[  5]   2.00-3.00   sec  4.96 GBytes  42.6 Gbits/sec   46    986 KBytes       
+[  5]   3.00-4.00   sec  4.47 GBytes  38.4 Gbits/sec    0    988 KBytes       
+[  5]   4.00-5.00   sec  4.42 GBytes  37.9 Gbits/sec    1   1.13 MBytes       
+- - - - - - - - - - - - - - - - - - - - - - - - -
+[ ID] Interval           Transfer     Bitrate         Retr
+[  5]   0.00-5.00   sec  23.2 GBytes  39.9 Gbits/sec  233             sender
+[  5]   0.00-5.00   sec  23.2 GBytes  39.9 Gbits/sec                  receiver
+
+iperf Done.

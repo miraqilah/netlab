@@ -1,0 +1,62 @@
+mininet> h1 ip -6 addr add fd00:1780::1/64 dev h1-eth0
+mininet> h2 ip -6 addr add fd00:1780::2/64 dev h2-eth0
+mininet> h1 ping -6 -c 2 fd00:1780::2
+PING fd00:1780::2 (fd00:1780::2) 56 data bytes
+64 bytes from fd00:1780::2: icmp_seq=1 ttl=64 time=0.975 ms
+64 bytes from fd00:1780::2: icmp_seq=2 ttl=64 time=0.456 ms
+
+--- fd00:1780::2 ping statistics ---
+2 packets transmitted, 2 received, 0% packet loss, time 1002ms
+rtt min/avg/max/mdev = 0.456/0.715/0.975/0.259 ms
+mininet> h1 ip link add vxlan106 type vxlan id 106 local fd00:1780::1 remote fd00:1780::2 dstport 4789 dev h1-eth0
+mininet> h1 ip addr add 10.80.106.1/24 dev vxlan106
+mininet> h1 ip link set vxlan106 up
+mininet> h2 ip link add vxlan106 type vxlan id 106 local fd00:1780::2 remote fd00:1780::1 dstport 4789 dev h2-eth0
+mininet> h2 ip addr add 10.80.106.2/24 dev vxlan106
+mininet> h2 ip link set vxlan106 up
+mininet> h1 ping -c 2 10.80.106.2
+PING 10.80.106.2 (10.80.106.2) 56(84) bytes of data.
+64 bytes from 10.80.106.2: icmp_seq=1 ttl=64 time=7.38 ms
+64 bytes from 10.80.106.2: icmp_seq=2 ttl=64 time=0.276 ms
+
+--- 10.80.106.2 ping statistics ---
+2 packets transmitted, 2 received, 0% packet loss, time 1002ms
+rtt min/avg/max/mdev = 0.276/3.829/7.382/3.553 ms
+mininet> h1 ip link show vxlan106
+3: vxlan106: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1430 qdisc noqueue state UNKNOWN mode DEFAULT group default qlen 1000
+    link/ether 5e:fb:00:de:ce:f3 brd ff:ff:ff:ff:ff:ff
+mininet> h1 ping -M do -c 1 -s 1402 10.80.106.2
+PING 10.80.106.2 (10.80.106.2) 1402(1430) bytes of data.
+1410 bytes from 10.80.106.2: icmp_seq=1 ttl=64 time=1.26 ms
+
+--- 10.80.106.2 ping statistics ---
+1 packets transmitted, 1 received, 0% packet loss, time 0ms
+rtt min/avg/max/mdev = 1.257/1.257/1.257/0.000 ms
+mininet> h1 ping -M do -c 1 -s 1403 10.80.106.2
+PING 10.80.106.2 (10.80.106.2) 1403(1431) bytes of data.
+ping: local error: message too long, mtu=1430
+
+--- 10.80.106.2 ping statistics ---
+1 packets transmitted, 0 received, +1 errors, 100% packet loss, time 0ms
+
+mininet> h2 timeout 15 tcpdump -ni h2-eth0 udp port 4789 > /tmp/h2-ipv6.txt 2>&1 &
+mininet> sh sleep 1
+mininet> h1 ping -c 2 10.80.106.2
+PING 10.80.106.2 (10.80.106.2) 56(84) bytes of data.
+64 bytes from 10.80.106.2: icmp_seq=1 ttl=64 time=2.93 ms
+64 bytes from 10.80.106.2: icmp_seq=2 ttl=64 time=0.641 ms
+
+--- 10.80.106.2 ping statistics ---
+2 packets transmitted, 2 received, 0% packet loss, time 1001ms
+rtt min/avg/max/mdev = 0.641/1.784/2.928/1.143 ms
+mininet> sh sleep 15
+mininet> sh cat /tmp/h2-ipv6.txt
+tcpdump: verbose output suppressed, use -v[v]... for full protocol decode
+listening on h2-eth0, link-type EN10MB (Ethernet), snapshot length 262144 bytes
+08:00:35.585911 IP6 fd00:1780::1.39664 > fd00:1780::2.4789: VXLAN, flags [I] (0x08), vni 106
+IP6 fe80::5cfb:ff:fede:cef3 > ff02::2: ICMP6, router solicitation, length 16
+
+1 packet captured
+1 packet received by filter
+0 packets dropped by kernel
+mininet> 
