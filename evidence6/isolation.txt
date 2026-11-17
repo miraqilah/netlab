@@ -1,0 +1,35 @@
+== red1 ping result
+PING 10.80.50.11 (10.80.50.11) 56(84) bytes of data.
+64 bytes from 10.80.50.11: icmp_seq=1 ttl=64 time=9.36 ms
+64 bytes from 10.80.50.11: icmp_seq=2 ttl=64 time=1.53 ms
+64 bytes from 10.80.50.11: icmp_seq=3 ttl=64 time=0.097 ms
+
+--- 10.80.50.11 ping statistics ---
+3 packets transmitted, 3 received, 0% packet loss, time 2003ms
+rtt min/avg/max/mdev = 0.097/3.663/9.362/4.072 ms
+
+== red1 neighbour table
+10.80.50.11 dev red1-eth0 lladdr 02:00:02:bc:00:0b STALE 
+
+
+== captured on blue2 meanwhile
+tcpdump: verbose output suppressed, use -v[v]... for full protocol decode
+listening on blue2-eth0, link-type EN10MB (Ethernet), snapshot length 262144 bytes
+
+0 packets captured
+0 packets received by filter
+0 packets dropped by kernel
+
+
+== blue1 ping result
+PING 10.80.50.11 (10.80.50.11) 56(84) bytes of data.
+64 bytes from 10.80.50.11: icmp_seq=1 ttl=64 time=14.3 ms
+64 bytes from 10.80.50.11: icmp_seq=2 ttl=64 time=1.57 ms
+
+--- 10.80.50.11 ping statistics ---
+2 packets transmitted, 2 received, 0% packet loss, time 1002ms
+rtt min/avg/max/mdev = 1.572/7.954/14.337/6.382 ms
+
+
+== blue1 neighbour table
+10.80.50.11 dev blue1-eth0 lladdr 02:00:03:20:00:0b REACHABLE 
