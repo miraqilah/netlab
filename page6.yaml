@@ -1,0 +1,48 @@
+# page6.yaml: the words on your Week 6 page. make_page6.py puts each answer under its question.
+# A few sentences each, in your own words, about YOUR overlay and YOUR evidence.
+# Leave a blank line between paragraphs. Don't put your name or your full student ID in this file.
+
+repository: https://github.com/miraqilah/netlab
+
+answers:
+  design:
+    question: "Describe your design: hypervisors, tenants, VNIs and addresses. Which tenants overlap, and why did you place each VM where you did?"
+    answer: |
+      My design has 3 hypervisors [hv1, hv2, hv3] and 3 tenants (red, blue, pink), each with its own VNI. Red = VNI 700, blue = VNI 800, pink = VNI 900;
+      Red and blue both use the same network, 10.80.50.0/24, while pink uses 10.80.60.0/24. Therefore, red and blue have overlapping IP addresses.
+      red has 3 vms (red1, red2 and red3), distributed across 3 different hypervisors (hv1, hv2 and hv3), with each hypervisor hosting one VM.
+      blue has 2 vms (blue1, blue2), distributed across 2 different hypervisors (hv1 and hv2), with each hypervisor hosting one VM.;
+      pink has 2 vms (pink1, pink2), distributed across 2 different hypervisors (hv2 and hv3), with each hypervisor hosting one VM.;
+      VMs is distributed across different hypervisors to test communication between VMs in the same tenant, while also testing whether tenants with overlapping IP addresses remain isolated.
+
+  isolation:
+    question: "Two of your VMs have the same IP address. Using your evidence, explain how a ping reaches the right one — and what would have to go wrong for one tenant to see another's traffic."
+    answer: |
+      After ping red1 to red2, I check for the neighbour table, which store IP-to-MAC address mapping. It showed that the MAC address of 10.80.50.11 is 02:00:02:bc:00:0b, which belongs to red2.
+      While after testing blue1, the same IP 10.80.50.11 has different MAC address which is 02:00:03:20:00:0b, that represent MAC address for blue2.
+      I also captured packets on blue2 during the red1 ping, but no packets were captured.
+      This shows that different VNIs keep the tenants isolated even when they use the same IP address. Traffic could reach another tenant if the VNI or VTEP configuration was incorrect and allowed traffic to cross between the tenant networks.
+
+  flood_learn:
+    question: "Using your evidence, explain what was flooded, to which hypervisors, and what each VTEP learned. With 50 hypervisors in one VNI, how many copies would one broadcast need — and how would EVPN change that?"
+    answer: |
+      When red1 on hv1 try to ping red2 on other hypervisor, its ARP request was flooded to other VTEPs on hv2 and hv3.
+      I used tcpdump on hv3 and managed to capture the VXLAN traffic even though hv3 was not the destination. This shown that the flood is happening.
+      When VTEP receives a packet, it learns the source MAC address and associate it with the remote VTEP from which the packet arrived. This allows it to forward subsequenct traffic directly instead of flooding it again.
+      With 50 hypervisors in one VNI, 1 broadcast needs 49 copies to reach the other hypervisors.
+      EVPN (Ethernet VPN) uses a control plane, commonly BGP EVPN, an replace flood-and-learn by distributing MAC and IP reachability information between VTEPs.
+      Instead of relying on flooding to discover remote MAC addresses, VTEPs can learn this information through the control plane.
+
+  mtu:
+    question: "Compare your two MTU fixes using your measurements. Which would you choose for a data centre, what does each cost, and who has to change what?"
+    answer: |
+      Fix A reduces the tenant MTU to 1450 bytes while keeping the underlay MTU at 1500 bytes. This means the maximum ICMP payload in my DF ping test was 1422 bytes. It is easier to use because the underlay does not need to support jumbo frames, but the tenant has a smaller MTU.
+      Fix B keeps the tenant MTU at 1500 bytes and increases the underlay MTU to 9000 bytes. This provides more room for VXLAN encapsulation, but all underlay links and network devices along the path must support the larger MTU.
+      In my iperf3 tests, Fix A achieved 3.35 Gbits/sec with 6846 retransmissions, while Fix B achieved 3.38 Gbits/sec with 3701 retransmissions. Fix B had slightly higher throughput and fewer retransmissions in my test.
+      I would choose Fix B for a data centre if the underlay supports jumbo frames because it allows the tenant to keep its 1500-byte MTU. The hypervisors and underlay network devices would need to be configured to support the larger MTU.
+
+  p4:
+    question: "If your hypervisors' VTEPs were P4 switches running the lecture's vtep.p4, what would have to fill the vtep_encap table, and how? What would replace flood-and-learn?"
+    answer: |
+      The vtep_encap table needs forwarding information such as the destination MAC address, remote VTEP IP address and VNI so that the P4 switch knows how to encapsulate and forward tenant packets.
+      A controller or EVPN control plane can provide this information and populate the table. Instead of relying on flood-and-learn, the VTEPs can receive MAC and IP reachability information through the control plane, allowing them to forward traffic to the correct remote VTEP.
