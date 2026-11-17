@@ -194,3 +194,90 @@ To use your own addresses, replace 1780 and 80 with your own digits.
         - suggesting rollout options, data plane vs control plane points and cost points for the evaluation, and giving feedback on my report drafts
 
     - I chose the 16-bit size, the `> 0` check and the starting value of 10 myself (Claude suggested 8 bits and 8). I ran every command, produced all the evidence from my own network (`10.80.0.x`), wrote my prediction before the mixed run and did not change it, and corrected my own mistakes after checking them against the logs. I could not confirm what bytes reached h2, so that explanation is a hypothesis. I take responsibility for the work I submitted, and I am ready to explain any part of it.
+
+    
+## Week 6: tunnels, MTU and containers
+
+- **Published page:** https://miraqilah.github.io/netlab/
+- **What I did and why:** 
+    - **Lab, Linux building blocks:** I explored how Mininet hosts and links are created using Linux network namespaces, virtual Ethernet pairs and bridges. This helped me understand how Mininet provides network isolation and connects hosts through virtual interfaces. 
+    
+    - **Lab, Building a VXLAN tunnel:** I created a VXLAN tunnel between h1 and h2 using VXLAN ID 100 and UDP port 4789. I assigned IP addresses to both VXLAN interfaces and tested their connectivity. I also used tcpdump to observe how packets are encapsulated. This helped me understand how VXLAN tunnel is invisible to switch. Part 3 showed s1 forwarding the packets “without knowing there was a tunnel at all”. That is why VXLAN works over almost any network, and why upgrading is much easier. While in P4, the switches were the tunnel. When s2 ran the old program in the mixed rollout, it misread the header (Bytes parsed: 38). Every device on the path must agree.
+
+    - **Lab, MTU and Throughput:** I checked the MTU of the underlay and VXLAN interfaces and compared their network performance using iperf3. The underlay MTU was 1500 bytes, while the VXLAN MTU was 1450 bytes due to the 50-byte IPv4 encapsulation overhead.
+
+    - **Lab, VXLAN over IPv6:**  I configured IPv6 addresses on the underlay interfaces and created another VXLAN106 tunnel using IPv6 as the outer transport. The encapsulation overhead increased from 50 to 70 bytes because the IPv6 header is 20 bytes larger than the IPv4 header.
+    
+    - **Lab, MTU Mismatch:** I changed h2's underlay interface MTU from 1500 to 1400 bytes while leaving the other side unchanged. Small pings still worked, but larger packets were dropped. This is because small ping packets sizes were below the available MTU limit. Therefore, they could travel through the network without being dropped. I also checked packet-drop counters and tested TCP performance to understand how MTU mismatch can cause packet loss and retransmissions. TCP transfers larger amounts of data and may generate packets that exceed the MTU limit. When packets become too large, they may be dropped, causing TCP retransmissions and reducing the overall throughput. This explains why small pings could still succeed while TCP performance was affected by the MTU mismatch.
+
+    - **Lab, VXLAN MTU limitation:** I tested different MTU settings and observed how Linux rejects an invalid VXLAN MTU configuration when it exceeds the available underlay MTU.
+    
+    - **Lab, Docker Containers:** I created an Alpine Linux Docker container and explored its network interface, filesystem and running processes. This helped me understand how Docker containers differ from Mininet hosts, as containers provide additional isolation through network, process and mount namespaces.
+
+    - **Assignment, design data centre:** Edit `overlay.yaml` to describes my own network with 3 hypervisors and 3 tenants each with its own VNI. Two tenants using the same network to create overlapping addresses. Two tenant spans 2 hypervisors each and one tenant spanning 3, with one virtual machine deployed on each hypervisor.
+
+    - **Assignment, build the tunnel endpoints:** fill up `tenant_commands()` in `build_overlay.py` 
+
+    - **Assignment, Check the MTU:** `check_mtu()` stop the network built by checking if the bytes needed more that underlay maximum MTU. running 
+
+    - **Assignment, Evidence from the running overlay:** 
+        - **Flood:** I wanted to understand how VXLAN handles flooding and MAC learning. First, I checked the FDB on hv1 before sending any traffic. I found that it already had permanent flood entries pointing to hv2 and hv3. Then, I sent a ping from red1 on hv1 to red2 on hv2. At the same time, I used tcpdump on hv3 to capture VXLAN traffic. Although hv3 was not the destination of the ping, I managed to capture a packet from hv1 to hv3 using UDP port 4789 and VNI 700. This showed that unknown traffic was flooded to other remote VTEPs, not only the intended destination. Finally, I checked the FDB again and observed that the hypervisors had learned the remote MAC addresses. This demonstrates how MAC learning helps the network forward subsequent traffic more efficiently."
+
+        - **Isolation:** I tested whether two different tenants could use the same IP address without interfering with each other. First, I pinged 10.80.50.11 from red1 and checked its neighbour table. The MAC address returned was 02:00:02:bc:00:0b, which belongs to red2. At the same time, I captured packets on blue2, but no packets were captured. This shows that traffic from tenant red was not reaching blue2. Next, I pinged the same IP address from blue1. The neighbour table showed a different MAC address, 02:00:03:20:00:0b, which belongs to blue2. Although both tenants used the same IP address, each resolved it to its own VM. This demonstrates how VXLAN uses different VNIs to maintain tenant isolation and allow overlapping IP addresses in separate virtual networks.
+
+        - **Black hole:** Performed a normal ping between red1 and 10.80.50.11 to confirm that basic network connectivity was working. Then, tested with a larger packet size of 1472 bytes. The ping failed because the packet exceeded the available MTU after VXLAN encapsulation, causing it to be dropped. Next, used iperf3 to test the impact of the MTU issue on TCP traffic. Started an iperf3 server on red2 and connected to it from red1. Although the TCP connection could be established, the data transfer experienced problems because oversized packets were dropped along the path. Finally, performed DF (Don't Fragment) ping tests with different packet sizes to identify the MTU boundary. Sent a packet with a size of 1450 bytes (1422 bytes ICMP payload + 28 bytes headers). The packet was successfully delivered with 0% packet loss. Increased the packet size to 1451 bytes (1423 bytes ICMP payload + 28 bytes headers). The packet failed to reach the destination. This shows that the path supports an MTU of 1450 bytes. Packets larger than this cannot be delivered without fragmentation.
+
+        - **Fixes:** Tested two different solutions to understand how adjusting the tenant MTU and increasing the underlay MTU can prevent oversized packets from being dropped in the VXLAN overlay. 
+            - **Fix A: Tenant MTU 1450:** Tested packet sizes of 1450 bytes (ping success) and 1451 bytes (ping failed) using DF ping. Used iperf3 to check TCP data transfer after applying the tenant MTU adjustment.
+
+            - **Fix B: Underlay MTU 9000:** Tested packet sizes of 1500 bytes (ping success) and 1501 bytes (ping failed) using DF ping. Then repeated the iperf3 test to check TCP data transfer with the larger underlay MTU.
+
+    - **Page:** `make_page.py` generates the page from the same data, so the page and the network can't disagree. It refuses to publish a network that fails a check.
+
+    
+- **Files, lab:**
+    - `week6/Part1-7.txt` – Contains the commands I ran and their terminal outputs for all seven parts.
+
+- **Files, assignment:**
+    - `overlay.yaml` : data centre design 
+    - `build_overlay.py`    : to build the data centre
+    - `blackhole.yaml` : all the tenant's and underlay MTU is 1500
+    - `mtu_a.yaml` : every tenant's MTU lowered to 1450; the underlay stays at 1500
+    - `mtu_b.yaml` : tenants MTU stay at 1500; the underlay's MTU is raised to 9000
+    - `evidence6/check.txt`: `check_mtu()` stopping `blackhole.yaml` with PROBLEM line per mistake
+    - `evidence6/flood.txt` : how VXLAN using flood to reach the unknown traffic; MAC address leaning
+    - `evidence6/isolation.txt` : same IP address unsed on seperate tenant will not interfer if using different VNI
+    - `evidence6/blackhole.txt` : big packet is drop without fremnetation
+    - `evidence6/fixes.txt`     : 
+    - `` 
+
+
+- **Run it:**
+
+      mn --topo single,2 --mac --switch lxbr --controller none --ipbase 10.NN.0.0/24   # builds the network that has a switch with 2 hosts connected to it
+      python3 build_overlay.py overlay.yaml             # builds the data centre
+      python3 build_overlay.py blackhole.yaml           # network with black-hole design that tenant's MTU > underlay MTU (1500 bytes)
+      python3 build_overlay.py mtu_a.yaml               # `check_mtu()` to run with MTU setting inside mtu_a.yaml
+      python3 build_overlay.py mtu_b.yaml               # `check_mtu()` to run with MTU setting inside mtu_b.yaml
+      python3 build_overlay.py blackhole.yaml --force   # build black-hole network after `check_mtu()` is filled
+              
+
+- **AI use**
+    - **Tool:** ChatGPT (OpenAI), through the ChatGPT web application.
+
+    - **Lab** ChatGPT helped me with:
+        - Explaining Linux network namespaces, virtual Ethernet interfaces, Linux bridges and how Mininet hosts are connected.
+        - Explaining how VXLAN encapsulation works and how to configure a VXLAN tunnel between two Mininet hosts.
+        - Understanding the packet headers and the difference between IPv4 and IPv6 VXLAN overhead.
+        - Explaining MTU, packet fragmentation, dropped packets, TCP retransmissions and throughput measurements.
+        - Troubleshooting commands and understanding the output from ping, tcpdump, iperf3 and Docker.
+        - Explaining the differences between a Mininet host and a Docker container.
+
+
+    - **Assignment** Claude helped me with:
+        - suggesting the extra check in `check()` that reports a link naming a switch or host that doesn't exist
+        - suggesting the code for `links_section()` and `mermaid_diagram()` in `make_page.py`
+        - explaining what each question in `page.yaml` was asking and giving feedback on my draft answers. 
+        - guiding the GitHub Pages setup, and giving feedback on the wording of this README
+
+    - I ran all the commands myself in the lab environment and checked the results against the terminal outputs. I also tested the tunnel, changed MTU values and observed how the network behaved under different conditions. I take responsibility for the work I submitted, and I am ready to explain any part of it.
