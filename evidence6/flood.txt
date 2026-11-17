@@ -1,0 +1,47 @@
+== hv1: vxlan700 before any traffic  (hv1 FDB before traffic.)
+2e:56:9d:f1:bc:f3 vlan 1 master br700 permanent
+2e:56:9d:f1:bc:f3 master br700 permanent
+00:00:00:00:00:00 dst 10.80.0.2 self permanent
+00:00:00:00:00:00 dst 10.80.0.3 self permanent
+
+
+== Successful red1-to-red2 ping.
+PING 10.80.50.11 (10.80.50.11) 56(84) bytes of data.
+64 bytes from 10.80.50.11: icmp_seq=1 ttl=64 time=10.1 ms
+64 bytes from 10.80.50.11: icmp_seq=2 ttl=64 time=0.156 ms
+
+--- 10.80.50.11 ping statistics ---
+2 packets transmitted, 2 received, 0% packet loss, time 1002ms
+rtt min/avg/max/mdev = 0.156/5.140/10.124/4.984 ms
+
+
+== captured on hv3's underlay (hv3 tcpdump showing the VXLAN packet)
+tcpdump: listening on hv3-eth0, link-type EN10MB (Ethernet), snapshot length 262144 bytes
+22:30:48.927735 IP (tos 0x0, ttl 64, id 9734, offset 0, flags [none], proto UDP (17), length 134)
+    10.80.0.1.37689 > 10.80.0.3.4789: [bad udp cksum 0x1527 -> 0x6ee8!] VXLAN, flags [I] (0x08), vni 700
+IP (tos 0x0, ttl 64, id 55782, offset 0, flags [DF], proto ICMP (1), length 84)
+    10.80.50.10 > 10.80.50.11: ICMP echo request, id 527, seq 1, length 64
+
+1 packet captured
+1 packet received by filter
+0 packets dropped by kernel
+
+
+
+== hv1: vxlan700 after (hv1 FDB after traffic)
+02:00:02:bc:00:0b master br700 
+2e:56:9d:f1:bc:f3 vlan 1 master br700 permanent
+2e:56:9d:f1:bc:f3 master br700 permanent
+02:00:02:bc:00:0b dst 10.80.0.2 self 
+00:00:00:00:00:00 dst 10.80.0.2 self permanent
+00:00:00:00:00:00 dst 10.80.0.3 self permanent
+
+
+
+== hv3: vxlan700 after (hv3 FDB after trafficc v)b
+02:00:02:bc:00:0a master br700 
+c6:71:9b:91:b1:90 vlan 1 master br700 permanent
+c6:71:9b:91:b1:90 master br700 permanent
+02:00:02:bc:00:0a dst 10.80.0.1 self 
+00:00:00:00:00:00 dst 10.80.0.1 self permanent
+00:00:00:00:00:00 dst 10.80.0.2 self permanent
