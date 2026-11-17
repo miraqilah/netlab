@@ -198,7 +198,7 @@ To use your own addresses, replace 1780 and 80 with your own digits.
     
 ## Week 6: tunnels, MTU and containers
 
-- **Published page:** https://miraqilah.github.io/netlab/
+- **Published page:** https://miraqilah.github.io/netlab/week6/
 - **What I did and why:** 
     - **Lab, Linux building blocks:** I explored how Mininet hosts and links are created using Linux network namespaces, virtual Ethernet pairs and bridges. This helped me understand how Mininet provides network isolation and connects hosts through virtual interfaces. 
     
@@ -214,11 +214,11 @@ To use your own addresses, replace 1780 and 80 with your own digits.
     
     - **Lab, Docker Containers:** I created an Alpine Linux Docker container and explored its network interface, filesystem and running processes. This helped me understand how Docker containers differ from Mininet hosts, as containers provide additional isolation through network, process and mount namespaces.
 
-    - **Assignment, design data centre:** Edit `overlay.yaml` to describes my own network with 3 hypervisors and 3 tenants each with its own VNI. Two tenants using the same network to create overlapping addresses. Two tenant spans 2 hypervisors each and one tenant spanning 3, with one virtual machine deployed on each hypervisor.
+    - **Assignment, design data centre:** I edited `overlay.yaml` to describe my own network with 3 hypervisors and 3 tenants, each with its own VNI. I also configured overlapping IP addresses between tenants to understand how separate virtual networks can use the same IP address without interfering with each other. Two tenants span 2 hypervisors each, while one tenant spans all 3 hypervisors. Each hypervisor has one virtual machine from each tenant.
 
-    - **Assignment, build the tunnel endpoints:** fill up `tenant_commands()` in `build_overlay.py` 
+    - **Assignment, build the tunnel endpoints:** fill up `tenant_commands()` in `build_overlay.py` to create the tenant network interfaces and VXLAN tunnel endpoints. This allows VMs belonging to the same tenant to communicate even when they are located on different hypervisors.
 
-    - **Assignment, Check the MTU:** `check_mtu()` stop the network built by checking if the bytes needed more that underlay maximum MTU. running 
+    - **Assignment, Check the MTU:** implemented `check_mtu()` to check whether the configured tenant MTU and VXLAN encapsulation overhead exceed the maximum underlay MTU. The function stops the network when it detects an MTU problem instead of allowing a network with an invalid MTU configuration to run. 
 
     - **Assignment, Evidence from the running overlay:** 
         - **Flood:** I wanted to understand how VXLAN handles flooding and MAC learning. First, I checked the FDB on hv1 before sending any traffic. I found that it already had permanent flood entries pointing to hv2 and hv3. Then, I sent a ping from red1 on hv1 to red2 on hv2. At the same time, I used tcpdump on hv3 to capture VXLAN traffic. Although hv3 was not the destination of the ping, I managed to capture a packet from hv1 to hv3 using UDP port 4789 and VNI 700. This showed that unknown traffic was flooded to other remote VTEPs, not only the intended destination. Finally, I checked the FDB again and observed that the hypervisors had learned the remote MAC addresses. This demonstrates how MAC learning helps the network forward subsequent traffic more efficiently."
@@ -232,29 +232,32 @@ To use your own addresses, replace 1780 and 80 with your own digits.
 
             - **Fix B: Underlay MTU 9000:** Tested packet sizes of 1500 bytes (ping success) and 1501 bytes (ping failed) using DF ping. Then repeated the iperf3 test to check TCP data transfer with the larger underlay MTU.
 
-    - **Page:** `make_page.py` generates the page from the same data, so the page and the network can't disagree. It refuses to publish a network that fails a check.
+    - **Page:** `make_page6.py` to generate the Week 6 page using the network configuration and page data. This helps keep the published page consistent with the network design and its checks.
 
-    
+
 - **Files, lab:**
     - `week6/Part1-7.txt` – Contains the commands I ran and their terminal outputs for all seven parts.
 
 - **Files, assignment:**
-    - `overlay.yaml` : data centre design 
+    - `overlay.yaml` : data centre network design 
     - `build_overlay.py`    : to build the data centre
     - `blackhole.yaml` : all the tenant's and underlay MTU is 1500
     - `mtu_a.yaml` : every tenant's MTU lowered to 1450; the underlay stays at 1500
     - `mtu_b.yaml` : tenants MTU stay at 1500; the underlay's MTU is raised to 9000
     - `evidence6/check.txt`: `check_mtu()` stopping `blackhole.yaml` with PROBLEM line per mistake
     - `evidence6/flood.txt` : how VXLAN using flood to reach the unknown traffic; MAC address leaning
-    - `evidence6/isolation.txt` : same IP address unsed on seperate tenant will not interfer if using different VNI
-    - `evidence6/blackhole.txt` : big packet is drop without fremnetation
-    - `evidence6/fixes.txt`     : 
-    - `` 
+    - `evidence6/isolation.txt` : Evidence showing same IP address used on seperate tenant will not interfer
+    - `evidence6/blackhole.txt` : Ping and iperf3 results demonstrating the MTU blackhole problem.
+    - `evidence6/fixes.txt`     : Ping and iperf3 measurements from the two MTU fixes
+    - `evidence6/mtu_a_check.txt` : Evidence of the MTU verification for Fix A
+    - `evidence6/mtu_b_check.txt` : Evidence of the MTU verification for Fix B
+    - `make_page6.py` : Generates the published page.
+    - `page6.yaml` : Answer for lab 6 assignment
 
 
 - **Run it:**
 
-      mn --topo single,2 --mac --switch lxbr --controller none --ipbase 10.NN.0.0/24   # builds the network that has a switch with 2 hosts connected to it
+      mn --topo single,2 --mac --switch lxbr --controller none --ipbase 10.NN.0.0/24   # builds the lab network that has a switch with 2 hosts connected to it
       python3 build_overlay.py overlay.yaml             # builds the data centre
       python3 build_overlay.py blackhole.yaml           # network with black-hole design that tenant's MTU > underlay MTU (1500 bytes)
       python3 build_overlay.py mtu_a.yaml               # `check_mtu()` to run with MTU setting inside mtu_a.yaml
@@ -274,10 +277,10 @@ To use your own addresses, replace 1780 and 80 with your own digits.
         - Explaining the differences between a Mininet host and a Docker container.
 
 
-    - **Assignment** Claude helped me with:
-        - suggesting the extra check in `check()` that reports a link naming a switch or host that doesn't exist
-        - suggesting the code for `links_section()` and `mermaid_diagram()` in `make_page.py`
-        - explaining what each question in `page.yaml` was asking and giving feedback on my draft answers. 
-        - guiding the GitHub Pages setup, and giving feedback on the wording of this README
+    - **Assignment** ChatGPT helped me with:
+        - Understanding the purpose of the network configuration files and the functions in build_overlay.py.
+        - Troubleshooting the VXLAN overlay, tenant isolation and MTU blackhole experiments.
+        - Understanding the results from the flood, isolation, blackhole and MTU fix experiments.
+        - Improving the explanations and organisation of this README.
 
     - I ran all the commands myself in the lab environment and checked the results against the terminal outputs. I also tested the tunnel, changed MTU values and observed how the network behaved under different conditions. I take responsibility for the work I submitted, and I am ready to explain any part of it.
