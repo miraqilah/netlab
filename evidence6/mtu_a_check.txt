@@ -1,0 +1,82 @@
+*** Error setting resource limits. Mininet's performance may be affected.
+Warning: Linux bridge may not work with net.bridge.bridge-nf-call-arptables = 1 
+Warning: Linux bridge may not work with net.bridge.bridge-nf-call-iptables = 1 
+Warning: Linux bridge may not work with net.bridge.bridge-nf-call-ip6tables = 1 
+*** Configuring hosts
+hv1 hv2 hv3 red1 red2 red3 blue1 blue2 pink1 pink2 
+*** Starting controller
+
+*** Starting 1 switches
+s1 
+*** Starting CLI:
+VTEP commands on hv1 (10.80.0.1):
+  ip link add br700 type bridge
+  ip link set br700 up
+  ip link add vxlan700 type vxlan id 700 local 10.80.0.1 dstport 4789 dev hv1-eth0
+  ip link set vxlan700 master br700
+  ip link set vxlan700 up
+  ip link set hv1-eth1 master br700
+  ip link set hv1-eth1 up
+  bridge fdb append 00:00:00:00:00:00 dev vxlan700 dst 10.80.0.2
+  bridge fdb append 00:00:00:00:00:00 dev vxlan700 dst 10.80.0.3
+  ip link add br800 type bridge
+  ip link set br800 up
+  ip link add vxlan800 type vxlan id 800 local 10.80.0.1 dstport 4789 dev hv1-eth0
+  ip link set vxlan800 master br800
+  ip link set vxlan800 up
+  ip link set hv1-eth2 master br800
+  ip link set hv1-eth2 up
+  bridge fdb append 00:00:00:00:00:00 dev vxlan800 dst 10.80.0.2
+VTEP commands on hv2 (10.80.0.2):
+  ip link add br700 type bridge
+  ip link set br700 up
+  ip link add vxlan700 type vxlan id 700 local 10.80.0.2 dstport 4789 dev hv2-eth0
+  ip link set vxlan700 master br700
+  ip link set vxlan700 up
+  ip link set hv2-eth1 master br700
+  ip link set hv2-eth1 up
+  bridge fdb append 00:00:00:00:00:00 dev vxlan700 dst 10.80.0.1
+  bridge fdb append 00:00:00:00:00:00 dev vxlan700 dst 10.80.0.3
+  ip link add br800 type bridge
+  ip link set br800 up
+  ip link add vxlan800 type vxlan id 800 local 10.80.0.2 dstport 4789 dev hv2-eth0
+  ip link set vxlan800 master br800
+  ip link set vxlan800 up
+  ip link set hv2-eth2 master br800
+  ip link set hv2-eth2 up
+  bridge fdb append 00:00:00:00:00:00 dev vxlan800 dst 10.80.0.1
+  ip link add br900 type bridge
+  ip link set br900 up
+  ip link add vxlan900 type vxlan id 900 local 10.80.0.2 dstport 4789 dev hv2-eth0
+  ip link set vxlan900 master br900
+  ip link set vxlan900 up
+  ip link set hv2-eth3 master br900
+  ip link set hv2-eth3 up
+  bridge fdb append 00:00:00:00:00:00 dev vxlan900 dst 10.80.0.3
+VTEP commands on hv3 (10.80.0.3):
+  ip link add br700 type bridge
+  ip link set br700 up
+  ip link add vxlan700 type vxlan id 700 local 10.80.0.3 dstport 4789 dev hv3-eth0
+  ip link set vxlan700 master br700
+  ip link set vxlan700 up
+  ip link set hv3-eth1 master br700
+  ip link set hv3-eth1 up
+  bridge fdb append 00:00:00:00:00:00 dev vxlan700 dst 10.80.0.1
+  bridge fdb append 00:00:00:00:00:00 dev vxlan700 dst 10.80.0.2
+  ip link add br900 type bridge
+  ip link set br900 up
+  ip link add vxlan900 type vxlan id 900 local 10.80.0.3 dstport 4789 dev hv3-eth0
+  ip link set vxlan900 master br900
+  ip link set vxlan900 up
+  ip link set hv3-eth2 master br900
+  ip link set hv3-eth2 up
+  bridge fdb append 00:00:00:00:00:00 dev vxlan900 dst 10.80.0.2
+
+Hypervisors: hv1 10.80.0.1, hv2 10.80.0.2, hv3 10.80.0.3
+Tenant red (VNI 700, MTU 1450): red1 10.80.50.10 on hv1, red2 10.80.50.11 on hv2, red3 10.80.50.12 on hv3
+Tenant blue (VNI 800, MTU 1450): blue1 10.80.50.10 on hv1, blue2 10.80.50.11 on hv2
+Tenant pink (VNI 900, MTU 1450): pink1 10.80.60.10 on hv2, pink2 10.80.60.11 on hv3
+
+mininet> mininet> 
+Interrupt
+mininet> mininet> 
